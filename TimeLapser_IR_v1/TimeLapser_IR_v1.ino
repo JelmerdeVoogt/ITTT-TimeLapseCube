@@ -26,10 +26,10 @@ bool onOff;
 //Bool to let the program know whether the button should be active or not
 bool canChange;
 
+//Run setup for the display, button and led
 void setup()
 {
   u8g2.begin();
-  u8g2.setCursor(0, 0);
   pinMode(Switch, INPUT_PULLUP);
   pinMode(LED, OUTPUT);
   Serial.begin(9600);
@@ -42,15 +42,17 @@ void loop()
   
   if (onOff) 
   {
+    //Turn indicator led on
     digitalWrite(LED, HIGH);
     regulateInterval();
   } else if (!onOff) 
   {
+     //Turn indicator led off
     digitalWrite(LED, LOW);
   }
 }
 
-//Send IR code to receiver (Nikon D50)
+//Pulse IR code to receiver (Nikon D50) with the correct time intervals
 void Pulse(void) 
 {
   int i;
@@ -90,12 +92,17 @@ void Pulse(void)
 
 void displayInterval() 
 {
-  u8g2.clearBuffer();          // clear the internal memory
-  u8g2.setFont(u8g2_font_inb24_mr);  
+   // Clear the internal memory
+  u8g2.clearBuffer(); 
+  //Set font for the displayed text        
+  u8g2.setFont(u8g2_font_inb24_mr);
+    
   if (shootingMinutes) 
   {
+    //This code is run when the interval > 1 minute
     if (minutes >= 10) 
     {
+      //Aligns the text to the middle of the display
       u8g2.setCursor(1, 24);
     } else {
       u8g2.setCursor(11, 24);
@@ -103,19 +110,24 @@ void displayInterval()
     u8g2.print(String(minutes) + "M");
   } else 
   {
+    //This code is run when the interval < 1 minute
     if (seconds >= 10) 
     {
+      //Aligns the text to the middle of the display
       u8g2.setCursor(11, 24);
     } else {
       u8g2.setCursor(23, 24);
     }
     u8g2.print(seconds);
   }
+  //Send internal memory to display
   u8g2.sendBuffer();
 }
 
+//Function for setting the interval
 void setInterval() 
 {
+  //Changes an input of 0-1000 to a value of 1000 - 30000 (x2), this is easier to calculate back to minutes
   val = 1000 + ((analogRead(potpin) * 29.31) * 2);
   seconds = val / 1000;
   if (seconds > 30) 
@@ -128,6 +140,7 @@ void setInterval()
   }
 }
 
+//This function changes a pulldown resistor button into a toggle switch.
 void buttonToggle()
 {
 if (digitalRead(Switch) == LOW && canChange) 
@@ -141,6 +154,7 @@ if (digitalRead(Switch) == LOW && canChange)
   }
 }
 
+//Timer function using Millis(). Executes 'Pulse()' every second / minute interval
 void regulateInterval()
 {
     if (shootingMinutes) 
